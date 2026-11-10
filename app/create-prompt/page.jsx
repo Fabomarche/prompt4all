@@ -11,6 +11,7 @@ const CreatePrompt = () => {
     const { data: session } = useSession()
 
     const [submitting, setSubmitting] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
     const [post, setPost] = useState({
         prompt: '',
         tag: ''
@@ -19,6 +20,7 @@ const CreatePrompt = () => {
     const createPrompt = async (e) => {
         e.preventDefault()
         setSubmitting(true)
+        setErrorMessage('')
 
         try {
             const response = await fetch('/api/prompt/new', {
@@ -31,9 +33,19 @@ const CreatePrompt = () => {
             })
             if (response.ok) {
                 router.push('/')
+                return
             }
+
+            let data = null
+            try {
+                data = await response.json()
+            } catch {
+                data = null
+            }
+            setErrorMessage(typeof data?.error === 'string' ? data.error : 'Could not save the prompt')
         } catch (error) {
-            console.log(error)
+            console.error('Failed to create prompt:', error.message)
+            setErrorMessage('Could not save the prompt')
         } finally {
             setSubmitting(false)
         }
@@ -46,6 +58,7 @@ const CreatePrompt = () => {
             setPost={setPost}
             submitting={submitting}
             handleSubmit={createPrompt}
+            error={errorMessage}
         />
     )
 }
