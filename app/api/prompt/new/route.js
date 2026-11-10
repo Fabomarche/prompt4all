@@ -1,4 +1,4 @@
-import { connectToDB } from "@utils/database"
+import { connectToDB, dbErrorResponse } from "@utils/database"
 import Prompt from "@models/prompt"
 
 export const POST = async(req,res)=> {
@@ -16,6 +16,6 @@ export const POST = async(req,res)=> {
 
         return new Response(JSON.stringify(newPrompt), {status: 201})
     }catch(error){
-        return new Response("Fail to create a new prompt", { status: 500 })
+        return dbErrorResponse(error, "Fail to create a new prompt")
     }
 }

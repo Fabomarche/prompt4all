@@ -12,10 +12,15 @@ const handler = NextAuth({
     ],
     callbacks:{
         async session({ session }){
+            await connectToDB()
+
             const sessionUser = await User.findOne({
                 email: session.user.email
             })
-            session.user.id = sessionUser._id.toString()
+
+            if (sessionUser) {
+                session.user.id = sessionUser._id.toString()
+            }
     
             return session
         },
@@ -38,7 +43,8 @@ const handler = NextAuth({
     
                 return true
             }catch(error){
-                console.log(error)
+                console.error("Sign in failed:", error.message)
+                return false
             }
         }
     }

@@ -22,17 +22,32 @@ const Feed = () => {
     const [searchText, setSearchText] = useState('')
     const [searchTimeout, setSearchTimeout] = useState(null)
     const [searchedResults, setSearchedResults] = useState([])
+    const [errorMessage, setErrorMessage] = useState('')
 
 
 
     const fetchPosts = async () => {
         try {
             const response = await fetch('/api/prompt')
-            const data = await response.json()
+            let data = null
+            try {
+                data = await response.json()
+            } catch {
+                data = null
+            }
 
+            if (!response.ok || !Array.isArray(data)) {
+                setAllPosts([])
+                setErrorMessage(typeof data?.error === 'string' ? data.error : 'Could not load prompts')
+                return
+            }
+
+            setErrorMessage('')
             setAllPosts(data)
         } catch (error) {
-            console.log(error)
+            console.error('Failed to load prompts:', error.message)
+            setAllPosts([])
+            setErrorMessage('Could not load prompts')
         }
     }
 
@@ -86,7 +101,9 @@ const Feed = () => {
                 />
             </form>
 
-            {searchText ? (
+            {errorMessage ? (
+                <p className="mt-10 text-center font-inter text-sm text-red-500">{errorMessage}</p>
+            ) : searchText ? (
                 <PromptCardList
                     data={searchedResults}
                     handleTagClick={handleTagClick}
